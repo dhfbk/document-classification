@@ -88,7 +88,7 @@ for typeName in ['goodTokens', 'allLemmas', 'allTokens']:
         labelText = " ".join(labelTokens)
         labelCorpus.append(labelText)
 
-        unfilteredText = labelText + " " + textOnly + "\n"
+        unfilteredText = labelText + "\t" + textOnly + "\n"
         if isTest:
             f_test.write(unfilteredText)
         else:
