@@ -22,6 +22,9 @@ parser.add_argument("--min-freq", help="Min frequency for stopwords (default: 5)
 
 args = parser.parse_args()
 
+types = ['goodTokens', 'allLemmas', 'allTokens']
+# types = ['goodTokens']
+
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
@@ -31,7 +34,6 @@ if not os.path.exists(completeFileName):
     exit()
 
 minFreq = args.min_freq
-# minWeight = args.min_weight
 
 minWeight = {}
 minWeight['by_document'] = 2.0
@@ -46,7 +48,7 @@ log.info("Loading JSON file")
 with open(completeFileName, "r") as f:
     data = json.load(f)
 
-for typeName in ['goodTokens', 'allLemmas', 'allTokens']:
+for typeName in types:
 
     logging.info("%s: writing unfiltered files" % typeName)
     unfilteredFileName_train = os.path.join(args.folder, "%s_unfiltered.train.txt" % typeName)
@@ -116,15 +118,6 @@ for typeName in ['goodTokens', 'allLemmas', 'allTokens']:
                     frequencies[part] = 0
                 frequencies[part] += 1
 
-        # vectorizer = CountVectorizer()
-        # vectors = vectorizer.fit_transform(textOnlyCorpus[corpusName])
-        # singlevec = np.sum(vectors.toarray(), axis=0)
-        # names = vectorizer.get_feature_names()
-        # for i in tqdm.tqdm(range(len(names))):
-        #     word = vectorizer.get_feature_names()[i]
-        #     freq = singlevec[i]
-        #     frequencies[word] = freq
-
         logging.info("%s-%s: extracting stopwords" % (typeName, corpusName))
         stopwords = set()
         for word in frequencies:
@@ -145,8 +138,6 @@ for typeName in ['goodTokens', 'allLemmas', 'allTokens']:
             cleanCorpus.append(" ".join(thisList))
 
         logging.info("%s-%s: calculating TF-IDF" % (typeName, corpusName))
-        # vectorizer = TfidfVectorizer(use_idf=True, stop_words=stopwords)
-        # vectorizer.fit_transform(textOnlyCorpus[corpusName])
         vectorizer = TfidfVectorizer(use_idf=True)
         vectorizer.fit_transform(cleanCorpus)
 
@@ -155,7 +146,6 @@ for typeName in ['goodTokens', 'allLemmas', 'allTokens']:
         okWords = []
         total = 0.0
         tf_idf = pd.DataFrame(vectorizer.idf_, index=vectorizer.get_feature_names(), columns=["idf_weights"])
-        # print(tf_idf.mean(axis = 0))
         for index, row in tf_idf.iterrows():
             weigths[index] = row['idf_weights']
             if row['idf_weights'] > minWeight[corpusName]:
@@ -193,8 +183,8 @@ for typeName in ['goodTokens', 'allLemmas', 'allTokens']:
                 buffer.write(labelNoSpace)
                 buffer.write("\t")
             inters = intersection(tokens, okWords)
-            if len(inters) == 0:
-                logging.warning("Zero")
+            # if len(inters) == 0:
+            #     logging.warning("Zero")
             buffer.write(" ".join(inters))
             buffer.write("\n")
 
