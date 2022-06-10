@@ -1,3 +1,12 @@
+import argparse
+
+parser = argparse.ArgumentParser(description='Save file for FastText.')
+parser.add_argument("folder", help="Folder with complete.json file")
+parser.add_argument("--min-freq", help="Min frequency for stopwords (default: 5)", type=int, default=5)
+# parser.add_argument("--min-weight", help="Min weight for TF-IDF (default: 2.0)", type=float, default=2.0)
+
+args = parser.parse_args()
+
 import os
 import json
 import tqdm
@@ -8,19 +17,11 @@ import pandas as pd
 import numpy as np
 import random
 import scipy
-import argparse
 import re
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import f1_score
 from sklearn.feature_extraction.text import CountVectorizer
-
-parser = argparse.ArgumentParser(description='Save file for FastText.')
-parser.add_argument("folder", help="Folder with complete.json file")
-parser.add_argument("--min-freq", help="Min frequency for stopwords (default: 5)", type=int, default=5)
-# parser.add_argument("--min-weight", help="Min weight for TF-IDF (default: 2.0)", type=float, default=2.0)
-
-args = parser.parse_args()
 
 types = ['goodTokens', 'allLemmas', 'allTokens']
 # types = ['goodTokens']
@@ -87,7 +88,7 @@ for typeName in types:
                 else:
                     textCorpusByLabel[labelNoSpace] += " " + textOnly
 
-        labelText = " ".join(labelTokens)
+        labelText = "\t".join(labelTokens)
         labelCorpus.append(labelText)
 
         unfilteredText = labelText + "\t" + textOnly + "\n"

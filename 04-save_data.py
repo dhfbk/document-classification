@@ -1,3 +1,12 @@
+import argparse
+
+parser = argparse.ArgumentParser(description='Save file for FastText.')
+parser.add_argument("input_tint_folder", metavar="input-tint-folder", help="Folder with JSON files parsed by Tint")
+parser.add_argument("input_file", metavar="input-file", help="JSON file with labels and IDs")
+parser.add_argument("output_folder", metavar="output-folder", help="Output folder")
+
+args = parser.parse_args()
+
 import os
 import json
 import tqdm
@@ -8,18 +17,10 @@ import pandas as pd
 import numpy as np
 import random
 import scipy
-import argparse
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import f1_score
 from sklearn.feature_extraction.text import CountVectorizer
-
-parser = argparse.ArgumentParser(description='Save file for FastText.')
-parser.add_argument("input_tint_folder", metavar="input-tint-folder", help="Folder with JSON files parsed by Tint")
-parser.add_argument("input_file", metavar="input-file", help="JSON file with labels and IDs")
-parser.add_argument("output_folder", metavar="output-folder", help="Output folder")
-
-args = parser.parse_args()
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -58,6 +59,12 @@ def getTintInfo(data):
 log.info("Loading JSON file")
 with open(args.input_file, "r") as f:
     data = json.load(f)
+
+if isinstance(data, dict):
+    data_tmp = []
+    for record in data:
+        data_tmp.append(data[record])
+    data = data_tmp
 
 if not os.path.exists(testListName):
     log.error("No test file found")

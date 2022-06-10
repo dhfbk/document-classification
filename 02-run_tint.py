@@ -1,8 +1,3 @@
-import requests
-import json
-import os
-import tqdm
-import logging
 import argparse
 
 parser = argparse.ArgumentParser(description='Parse files with Tint.')
@@ -11,6 +6,12 @@ parser.add_argument("output_folder", metavar="output-folder", help="Output folde
 parser.add_argument("--tint_url", help="Tint URL", type=str, default="http://dh-server.fbk.eu:8016/tint")
 
 args = parser.parse_args()
+
+import requests
+import json
+import os
+import tqdm
+import logging
 
 logging.basicConfig(level=logging.INFO)
 
@@ -33,6 +34,8 @@ errors = []
 logging.info("Running Tint")
 pbar = tqdm.tqdm(data, smoothing=0.5, maxinterval=1)
 for record in pbar:
+    if isinstance(record, str):
+        record = data[record]
     text = record['text']
     thisId = record['id']
     pbar.set_description(thisId)

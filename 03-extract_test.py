@@ -1,3 +1,13 @@
+import argparse
+
+parser = argparse.ArgumentParser(description='Save file for FastText.')
+parser.add_argument("input_tint_folder", metavar="input-tint-folder", help="Folder with JSON files parsed by Tint")
+parser.add_argument("input_file", metavar="input-file", help="JSON file with labels and IDs")
+parser.add_argument("output_folder", metavar="output-folder", help="Output folder")
+parser.add_argument("--ratio", help="Percentage of test data (default: 0.2)", type=float, default=0.2)
+
+args = parser.parse_args()
+
 import os
 import json
 import tqdm
@@ -8,19 +18,10 @@ import pandas as pd
 import numpy as np
 import random
 import scipy
-import argparse
 import math
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import f1_score
-
-parser = argparse.ArgumentParser(description='Save file for FastText.')
-parser.add_argument("input_tint_folder", metavar="input-tint-folder", help="Folder with JSON files parsed by Tint")
-parser.add_argument("input_file", metavar="input-file", help="JSON file with labels and IDs")
-parser.add_argument("output_folder", metavar="output-folder", help="Output folder")
-parser.add_argument("--ratio", help="Percentage of test data (default: 0.2)", type=float, default=0.2)
-
-args = parser.parse_args()
 
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -42,6 +43,13 @@ testList = []
 classSizes = {}
 testSizes = {}
 isMultiLabel = False
+
+if isinstance(data, dict):
+    data_tmp = []
+    for record in data:
+        data_tmp.append(data[record])
+    data = data_tmp
+
 for record in data:
 
     # Better to check this here, too
@@ -64,33 +72,48 @@ for label in classSizes:
     if num > 1:
         testSizes[label] = math.ceil(testRatio * num)
 
-random.shuffle(data)
+while True:
+    log.info("Shuffling data")
+    random.shuffle(data)
 
-log.info("Extracting texts")
-for record in data:
-    tintFile = os.path.join(args.input_tint_folder, record['id'] + ".json")
-    if not os.path.exists(tintFile):
-        log.warning("File %s does not exist" % tintFile)
-        continue
+    labelsInTrain = set()
+    labelsInTest = set()
 
-    if len(record['labels']) == 0:
-        log.warning("File %s has no labels, skipping" % tintFile)
-        continue
+    log.info("Extracting texts")
+    for record in data:
+        tintFile = os.path.join(args.input_tint_folder, record['id'] + ".json")
+        if not os.path.exists(tintFile):
+            log.warning("File %s does not exist" % tintFile)
+            continue
 
-    isTest = False
-    if isMultiLabel:
-        extract = random.uniform(0, 1)
-        isTest = extract < testRatio
+        if len(record['labels']) == 0:
+            log.warning("File %s has no labels, skipping" % tintFile)
+            continue
+
+        isTest = False
+        if isMultiLabel:
+            extract = random.uniform(0, 1)
+            isTest = extract < testRatio
+        else:
+            if testSizes[record['labels'][0]] > 0:
+                testSizes[record['labels'][0]] -= 1
+                isTest = True
+
+        if isTest:
+            testList.append(record['id'])
+            labelsInTest.update(record['labels'])
+            testSize += 1
+        else:
+            labelsInTrain.update(record['labels'])
+            trainSize += 1
+
+    if not isMultiLabel:
+        break
     else:
-        if testSizes[record['labels'][0]] > 0:
-            testSizes[record['labels'][0]] -= 1
-            isTest = True
-
-    if isTest:
-        testList.append(record['id'])
-        testSize += 1
-    else:
-        trainSize += 1
+        if labelsInTest.issubset(labelsInTrain):
+            break
+        else:
+            log.info("Repeating shuffling")
 
 log.info("Saving test list")
 with open(testListName, "w") as fw:

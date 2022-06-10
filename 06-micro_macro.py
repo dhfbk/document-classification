@@ -1,12 +1,4 @@
-import logging
 import argparse
-import numpy as np
-import operator
-import collections
-
-from sklearn.metrics import f1_score
-from sklearn.preprocessing import MultiLabelBinarizer
-from sklearn.metrics import confusion_matrix
 
 parser = argparse.ArgumentParser(description='Get micro/macro.')
 parser.add_argument("pred_file", metavar="pred-file", help="Predictions file")
@@ -15,6 +7,15 @@ parser.add_argument("--prob-threshold", help="Probability threshold (default: 0.
 parser.add_argument("--show-cm", help="Show confusion matrix", action='store_true')
 
 args = parser.parse_args()
+
+import logging
+import numpy as np
+import operator
+import collections
+
+from sklearn.metrics import f1_score
+from sklearn.preprocessing import MultiLabelBinarizer
+from sklearn.metrics import confusion_matrix
 
 probThreshold = args.prob_threshold
 
