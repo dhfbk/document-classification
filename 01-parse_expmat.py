@@ -5,12 +5,14 @@
 # Since column names do not appear in the same order across files, the getFields function retrieves target names and their index
 
 import os, json, logging, csv, argparse, pprint
+from collections import Counter
 
 logging.basicConfig(level=logging.INFO)
 
 parser = argparse.ArgumentParser(description='Parse export-materie dump.')
 parser.add_argument("input_folder", metavar="input-folder", help="Folder containing export files (csv).")
 parser.add_argument("output_folder", metavar="output-folder", help="Output folder.")
+parser.add_argument("--limit", metavar="limit", default=10, help="Min class occurrence threshold.")
 args = parser.parse_args()
 
 
@@ -66,6 +68,15 @@ for file in os.listdir(args.input_folder):
         
 all_objs = [{"id": k, "text": v["text"], "labels": v["labels"], "dtype": v["dtype"]} for k,v in output.items()]
 logging.info("Collected " + str(len(all_objs)) + " objects.")
+
+logging.info("Removing under-threshold labels...")
+all_labels = [obj['labels'] for obj in all_objs]
+label_count = Counter(lab for labs in all_labels for lab in labs)
+for obj in all_objs:
+    obj['labels'] = [lab for lab in obj['labels'] if label_count[lab] > args.limit] # remove under-threshold labels
+
+all_objs = [obj for obj in all_objs if len(obj['labels']) > 0] # remove now unlabelled objects
+logging.info(str(len(all_objs)) + " objects left.")
 
 logging.info("Writing to file.")
 if not os.path.exists(args.output_folder):
