@@ -29,6 +29,7 @@ if not os.path.exists(args.output_folder):
     os.makedirs(args.output_folder)
 
 testListName = os.path.join(args.output_folder, "testlist.txt")
+devListName = os.path.join(args.output_folder, "devlist.txt")
 
 completeFileName = os.path.join(args.output_folder, "complete.json")
 
@@ -71,12 +72,22 @@ if not os.path.exists(testListName):
     exit()
 
 testList = []
+devList = []
 with open(testListName, "r") as f:
     for line in f:
         line = line.strip()
         if len(line) == 0:
             continue
         testList.append(line)
+
+if os.path.exists(devListName):
+    with open(devListName, "r") as f:
+        for line in f:
+            line = line.strip()
+            if len(line) == 0:
+                continue
+            devList.append(line)
+
 
 log.info("Extracting texts")
 textOnlyCorpus = []
@@ -98,10 +109,12 @@ for record in tqdm.tqdm(data):
     record['allLemmas'] = allLemmas
     record['allTokens'] = allTokens
 
+    record['test'] = 0
+    record['dev'] = 0
     if record['id'] in testList:
         record['test'] = 1
-    else:
-        record['test'] = 0
+    elif record['id'] in devList:
+        record['dev'] = 1
 
 log.info("Saving file")
 with open(completeFileName, 'w') as fw:

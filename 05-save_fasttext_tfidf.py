@@ -54,9 +54,11 @@ for typeName in types:
     logging.info("%s: writing unfiltered files" % typeName)
     unfilteredFileName_train = os.path.join(args.folder, "%s_unfiltered.train.txt" % typeName)
     unfilteredFileName_test = os.path.join(args.folder, "%s_unfiltered.test.txt" % typeName)
+    unfilteredFileName_dev = os.path.join(args.folder, "%s_unfiltered.dev.txt" % typeName)
 
     f_train = open(unfilteredFileName_train, "w")
     f_test = open(unfilteredFileName_test, "w")
+    f_dev = open(unfilteredFileName_dev, "w")
 
     textOnlyCorpus = {}
     textOnlyCorpus['by_document'] = []
@@ -75,14 +77,15 @@ for typeName in types:
 
         textOnly = " ".join(record[typeName])
         isTest = record['test'] == 1
-        if not isTest:
+        isDev = record['dev'] == 1
+        if not isTest and not isDev:
             textOnlyCorpus['by_document'].append(textOnly)
 
         labelTokens = []
         for label in record['labels']:
             labelNoSpace = label.replace(" ", "_")
             labelTokens.append("__label__" + labelNoSpace)
-            if not isTest:
+            if not isTest and not isDev:
                 if labelNoSpace not in textCorpusByLabel:
                     textCorpusByLabel[labelNoSpace] = textOnly
                 else:
@@ -94,11 +97,14 @@ for typeName in types:
         unfilteredText = labelText + "\t" + textOnly + "\n"
         if isTest:
             f_test.write(unfilteredText)
+        elif isDev:
+            f_dev.write(unfilteredText)
         else:
             f_train.write(unfilteredText)
 
     f_train.close()
     f_test.close()
+    f_dev.close()
 
     for label in textCorpusByLabel:
         textOnlyCorpus['by_label'].append(textCorpusByLabel[label])
@@ -158,9 +164,11 @@ for typeName in types:
         logging.info("%s-%s: writing filtered files" % (typeName, corpusName))
         unfilteredFileName_train = os.path.join(args.folder, "%s_%s_filtered.train.txt" % (typeName, corpusName))
         unfilteredFileName_test = os.path.join(args.folder, "%s_%s_filtered.test.txt" % (typeName, corpusName))
+        unfilteredFileName_dev = os.path.join(args.folder, "%s_%s_filtered.dev.txt" % (typeName, corpusName))
 
         f_train = open(unfilteredFileName_train, "w")
         f_test = open(unfilteredFileName_test, "w")
+        f_dev = open(unfilteredFileName_dev, "w")
 
         for record in tqdm.tqdm(data):
             if len(record['labels']) == 0:
@@ -171,8 +179,11 @@ for typeName in types:
 
             tokens = record[typeName]
             isTest = record['test'] == 1
+            isDev = record['dev'] == 1
             if isTest:
                 buffer = f_test
+            elif isDev:
+                buffer = f_dev
             else:
                 buffer = f_train
 
@@ -191,4 +202,5 @@ for typeName in types:
 
         f_train.close()
         f_test.close()
+        f_dev.close()
 
