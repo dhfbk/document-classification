@@ -64,9 +64,11 @@ m = MultiLabelBinarizer().fit(y_true)
 
 macro_f1_score = f1_score(m.transform(y_true), m.transform(y_pred), average='macro')
 micro_f1_score = f1_score(m.transform(y_true), m.transform(y_pred), average='micro')
+weighted_f1_score = f1_score(m.transform(y_true), m.transform(y_pred), average='weighted')
 
 print("Macro:", macro_f1_score)
 print("Micro:", micro_f1_score)
+print("Weighted:", weighted_f1_score)
 
 if args.show_cm:
     print()
