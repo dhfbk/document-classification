@@ -11,8 +11,13 @@ args = parser.parse_args()
 
 csvfilename = args.atti_file
 
-url = "http://" + args.tint_host + ":" + str(args.tint_port) + "/tint"
 limit = 0.01
+url = None
+if not args.tint_host:
+    import stanza
+    nlp = stanza.Pipeline('it', processors='tokenize,mwt,pos,lemma')
+else:
+    url = "http://" + args.tint_host + ":" + str(args.tint_port) + "/tint"
 
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import logging
@@ -22,6 +27,7 @@ import json
 import fasttext
 import numpy
 import csv
+import utils
 
 class S(BaseHTTPRequestHandler):
     def do_POST(self):
@@ -31,9 +37,10 @@ class S(BaseHTTPRequestHandler):
         # text = text.replace("%0D", "")
         # mylist = urllib.parse.parse_qs(text)
         # myobj = {'text' : mylist['text']}
-        input_data = json.loads(text)
-        x = requests.post(url, data = input_data["text"])
-        data = json.loads(x.text)
+        if url:
+            data = utils.runTint(url, text)
+        else:
+            data = utils.runStanza(nlp, text)
 
         limit = float(input_data["precision"])
 
