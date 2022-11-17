@@ -1,4 +1,5 @@
 # parse export_materie dump, containing following files: s1.csv, s3.csv, SG.csv, direttive-recepimenti.csv
+# or, alternatively, a single file
 # Since column names were not consistent, following column header have been renamed
 # direttive-recepimenti.csv: REDAZ_S2 --> REDAZ
 # s1.csv: MCODMAT --> MATERIA
@@ -12,7 +13,8 @@ logging.basicConfig(level=logging.INFO)
 parser = argparse.ArgumentParser(description='Parse export-materie dump.')
 parser.add_argument("input_folder", metavar="input-folder", help="Folder containing export files (csv).")
 parser.add_argument("output_folder", metavar="output-folder", help="Output folder.")
-parser.add_argument("--limit", metavar="limit", default=10, help="Min class occurrence threshold.")
+parser.add_argument("-limit", metavar="limit", default=10, help="Min class occurrence threshold.")
+parser.add_argument("-fname", metavar="fname", default=None, help="Name of specific file (series) to process.")
 args = parser.parse_args()
 
 
@@ -38,9 +40,10 @@ doc_types = {
 
 # Processing
 idPrefix = "ipzs-"
+filelist = os.listdir(args.input_folder) if not args.fname else [args.fname]
 output = {}
 
-for file in os.listdir(args.input_folder):
+for file in filelist:
     if file.endswith('.csv'):
         obj_count = 0
         logging.info("Processing " + file)
@@ -81,4 +84,9 @@ logging.info(str(len(all_objs)) + " objects left.")
 logging.info("Writing to file.")
 if not os.path.exists(args.output_folder):
     os.mkdir(args.output_folder)
-json.dump(all_objs, open(args.output_folder+"01-expmat.json", 'w'), indent=4)
+
+if args.fname is None:
+    json.dump(all_objs, open(args.output_folder+"01-expmat.json", 'w'), indent=4)
+else:
+    doctype = doc_types[args.fname]
+    json.dump(all_objs, open(args.output_folder+"01-expmat_"+doctype+".json", 'w'), indent=4)
