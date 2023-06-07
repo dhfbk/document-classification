@@ -38,7 +38,7 @@ python3 01-parse_ipzs.py input-folder output-folder/data.json
 ## 2. Parsing
 
 The script called `02-parse.py` run Tint or Stanza to lemmatize the documents, extract part-of-speeches, and save a JSON files for each document.
-By default, Stanza is used, unless the `--tint_url` parameter is used.
+By default, Stanza is used, unless the `--tint_url` parameter is provided.
 
 Example:
 ```
