@@ -1,4 +1,4 @@
-from os import path, environ
+from os import path, environ, listdir
 from transformers import pipeline
 from fastapi import FastAPI, HTTPException, Header
 from fastapi.middleware import Middleware
@@ -9,21 +9,23 @@ import json
 from dotenv import load_dotenv
 load_dotenv()
 
-models = {
-    "euvoc": "euvoc",
-    "euvoc-s1": "euvoc",
-    "euvoc-s3": "euvoc",
-    "euvoc-sg": "euvoc",
-    "ipzs-s1": "ipzs",
-    "ipzs-s3": "ipzs",
-    "ipzs-sg": "ipzs"
-}
+max_results = 100
+
 models_path = environ.get("MODEL_PATH", "./models")
 device = environ.get("DEVICE", "cpu")
 language = environ.get("CLASSLANG", "it")
 label_mappings_path = environ.get("LABEL_MAPPINGS_PATH", "./label_mappings")
 id_label_path = environ.get("ID_LABEL_PATH", "./id2label.json")
 id_eu_path = environ.get("ID_EU_PATH", "./i2eu_id.json")
+
+models = {}
+for p in listdir(models_path):
+    config_file = path.join(models_path, p, "config.json")
+    if path.exists(config_file):
+        t = "euvoc"
+        if p.startswith("ipzs"):
+            t = "ipzs"
+        models[p] = t
 
 labels = {}
 with open(id_label_path, "r", encoding="utf-8") as f:
@@ -71,14 +73,14 @@ class TextRequest(BaseModel):
     text: str = ""
     model: str
     title: str = ""
-    top_k: int = 10
+    top_k: int = 50
     threshold: float = 0.0
     greedy: bool = False
 
 # Dummy endpoint to check if the API is running
 @app.get("/")
 async def get_data():
-    return {"message": "Welcome to Mordor!"}
+    return models
 
 # Endpoint to get the predictions for a text
 @app.post("/api")
@@ -122,7 +124,7 @@ async def post_data(request: TextRequest, Token: str = Header(None, convert_unde
         condition = i > top_k or threshold > p['score']
         if greedy:
             condition = i > top_k and threshold > p['score']
-        if condition:
+        if condition or i > max_results:
             break
         good_predictions.append(p)
 
