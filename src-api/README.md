@@ -16,7 +16,7 @@ Before running the API, there are some environments variables you can set.
   labels \[default: `id2label.json`\]
 * `ID_EU_PATH`: path to the JSON file containing the mappings between IPZS and EuroVoc codes
   \[default: `i2eu_id.json`\]
-* `AUTH_TOKEN`: token needed to use the API (see folder `src-ui` for more information)
+* `AUTH_TOKEN`: token needed to use the API (see `src-ui` folder for more information)
 
 ## Run the server
 
