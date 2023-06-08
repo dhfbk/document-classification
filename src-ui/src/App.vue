@@ -83,7 +83,7 @@
             </form>
             <div v-if="launched">
                 <h2 class="py-4">
-                    Results {{ model_type }}
+                    Results
                 </h2>
                 <div v-if="loading_results">
                     <div class="spinner-border" role="status">
