@@ -1,6 +1,7 @@
 from os import path, environ, listdir
 from transformers import pipeline
 from fastapi import FastAPI, HTTPException, Header
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware import Middleware
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -67,6 +68,7 @@ middleware = [
 ]
 
 app = FastAPI(middleware=middleware)
+app.mount("/ui", StaticFiles(directory="dist",html = True), name="ui")
 
 # Define the request body. It should contain only a text field
 class TextRequest(BaseModel):
@@ -78,12 +80,12 @@ class TextRequest(BaseModel):
     greedy: bool = False
 
 # Dummy endpoint to check if the API is running
-@app.get("/")
+@app.get("/api/models")
 async def get_data():
     return models
 
 # Endpoint to get the predictions for a text
-@app.post("/api")
+@app.post("/api/predict")
 async def post_data(request: TextRequest, Token: str = Header(None, convert_underscores=False)):
 
     if environ.get("AUTH_TOKEN") and Token != environ.get("AUTH_TOKEN"):

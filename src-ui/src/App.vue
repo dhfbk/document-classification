@@ -115,6 +115,8 @@
 import axios from "axios";
 import {Tooltip} from 'bootstrap'
 
+const apiPath = process.env.VUE_APP_API_URL ? process.env.VUE_APP_API_URL : '';
+
 export default {
     name: 'App',
     data() {
@@ -165,8 +167,8 @@ export default {
             if (this.use_max && this.use_threshold) {
                 requestData['greedy'] = this.greedy;
             }
-            let post_config = {headers: {"Token": process.env.VUE_APP_TOKEN}};
-            axios.post(process.env.VUE_APP_API_URL + "/api", requestData, post_config).then(function (response) {
+            let post_config = process.env.VUE_APP_TOKEN ? {headers: {"Token": process.env.VUE_APP_TOKEN}}: {};
+            axios.post(apiPath + "/api/predict", requestData, post_config).then(function (response) {
                 thisBak.results = response.data;
                 thisBak.model_type = thisBak.models[thisBak.model];
             }).catch(function () {
@@ -181,7 +183,7 @@ export default {
             selector: "[data-bs-toggle='tooltip']",
         })
         let thisBak = this;
-        axios.get(process.env.VUE_APP_API_URL + "/").then(function (response) {
+        axios.get(apiPath + "/api/models").then(function (response) {
             thisBak.models = response.data;
         }).catch(function () {
             alert("Unable to get the list of models, please try again.")

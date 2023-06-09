@@ -1,7 +1,7 @@
 # Document classification UI
 
 ## Installation
-To install the web interface, one needs to create a `.env` file containing these variables:
+To install the web interface, it is possible to create a `.env` file containing these variables:
 
 ```
 VUE_APP_TOKEN=
@@ -16,6 +16,11 @@ where
 * `VUE_PUBLIC_PATH` is the path where the built project will be reachable
   (for example, if the final URL will be `https://www.example.com/ui/`,
   this variable needs to be set to `/ui/`)
+
+Install dependencies, running
+```
+npm install
+```
 
 Then the project can be built using the command
 ```
