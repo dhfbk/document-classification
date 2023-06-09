@@ -68,7 +68,7 @@ middleware = [
 ]
 
 app = FastAPI(middleware=middleware)
-app.mount("/ui", StaticFiles(directory="dist",html = True), name="ui")
+app.mount("/ui", StaticFiles(directory="dist", html = True), name="ui")
 
 # Define the request body. It should contain only a text field
 class TextRequest(BaseModel):
