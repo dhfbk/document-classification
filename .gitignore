@@ -11,3 +11,4 @@ src-api/id2label.json
 src-api/models
 src-api/label_mappings
 src-api/mt_labels.json
+data

@@ -11,6 +11,7 @@ To run the project as a Docker container you first need to prepare the required 
   containing the descriptions of the EuroVoc labels
 * ``id2label.json`` JSON file containing the descriptions of the IPZS
 * ``i2eu_id.json`` JSON file containing the mappings between IPZS and EuroVoc codes
+* ``mt_labels.json`` JSON file containing the MT and DO parents for EuroVoc
   
 To execute the docker container, run the following command:
 ```
@@ -25,7 +26,7 @@ Once started (may require quite some time due to the size of image and the model
 ## Creating Docker image
 To create a new version of the Docker image, run the following command from this directory
 ```
-docker build -t imagename
+docker build -t imagename .
 ```
 replacing ``imagename`` with the name of your choice.
 

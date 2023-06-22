@@ -27,5 +27,6 @@ ENV MODEL_PATH=/data/models
 ENV LABEL_MAPPINGS_PATH=/data/label_mappings
 ENV ID_LABEL_PATH=/data/id2label.json
 ENV ID_EU_PATH=/data/i2eu_id.json
+ENV MT_LABEL_PATH=/data/mt_labels.json
 
 CMD ["uvicorn", "test-server:app", "--proxy-headers", "--host", "0.0.0.0", "--port", "80"]
