@@ -40,7 +40,8 @@
                                    :disabled="!use_max || !use_threshold">
                             <label class="form-check-label" for="greedy">Greedy</label>
                             <span class="ms-2" data-bs-toggle="tooltip"
-                                  data-bs-title="Stabilisce se le due regole seguenti vanno in AND oppure in OR"><i class="bi bi-info-circle"></i></span>
+                                  data-bs-title="Stabilisce se le due regole seguenti vanno in AND oppure in OR"><i
+                                class="bi bi-info-circle"></i></span>
                         </div>
                         <label class="col-form-label">
                             &nbsp;
@@ -99,6 +100,14 @@
                             <span class="badge text-bg-primary">{{ result.score.toFixed(2) }}</span>
                             <span class="badge text-bg-success ms-2">{{ model_type }}-{{ result.label }}</span>
                             {{ result.description }}
+                            <span v-if="result.mt" class="badge text-bg-info ms-2">→ euvoc-{{
+                                    result.mt.label
+                                }}<template
+                                    v-if="result.mt.description"> - {{ result.mt.description }}</template></span>
+                            <span v-if="result.do" class="badge text-bg-info ms-2">→ euvoc-{{
+                                    result.do.label
+                                }}<template
+                                    v-if="result.do.description"> - {{ result.do.description }}</template></span>
                             <span v-if="result.mapping" class="badge text-bg-warning ms-2">→ euvoc-{{
                                     result.mapping.label
                                 }} - {{ result.mapping.description }}</span>
@@ -167,7 +176,7 @@ export default {
             if (this.use_max && this.use_threshold) {
                 requestData['greedy'] = this.greedy;
             }
-            let post_config = process.env.VUE_APP_TOKEN ? {headers: {"Token": process.env.VUE_APP_TOKEN}}: {};
+            let post_config = process.env.VUE_APP_TOKEN ? {headers: {"Token": process.env.VUE_APP_TOKEN}} : {};
             axios.post(apiPath + "/api/predict", requestData, post_config).then(function (response) {
                 thisBak.results = response.data;
                 thisBak.model_type = thisBak.models[thisBak.model];

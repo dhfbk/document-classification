@@ -17,7 +17,9 @@ device = environ.get("DEVICE", "cpu")
 language = environ.get("CLASSLANG", "it")
 label_mappings_path = environ.get("LABEL_MAPPINGS_PATH", "./label_mappings")
 id_label_path = environ.get("ID_LABEL_PATH", "./id2label.json")
+mt_label_path = environ.get("MT_LABEL_PATH", "./mt_labels.json")
 id_eu_path = environ.get("ID_EU_PATH", "./i2eu_id.json")
+ui_path = environ.get("UI_PATH", "./dist")
 
 models = {}
 for p in listdir(models_path):
@@ -33,6 +35,21 @@ with open(id_label_path, "r", encoding="utf-8") as f:
     labels['ipzs'] = json.load(f)
 with open(path.join(label_mappings_path, f"{language}.json"), "r", encoding="utf-8") as f:
     labels['euvoc'] = json.load(f)
+if path.exists(path.join(label_mappings_path, f"{language}_do.json")):
+    with open(path.join(label_mappings_path, f"{language}_do.json"), "r", encoding="utf-8") as f:
+        d = json.load(f)
+        for k in d:
+            labels['euvoc'][k] = d[k]
+if path.exists(path.join(label_mappings_path, f"{language}_mt.json")):
+    with open(path.join(label_mappings_path, f"{language}_mt.json"), "r", encoding="utf-8") as f:
+        d = json.load(f)
+        for k in d:
+            labels['euvoc'][k] = d[k]
+
+parents = {}
+if path.exists(mt_label_path):
+    with open(mt_label_path, "r", encoding="utf-8") as f:
+        parents = json.load(f)
 
 mappings = {}
 with open(id_eu_path, "r", encoding="utf-8") as f:
@@ -68,7 +85,9 @@ middleware = [
 ]
 
 app = FastAPI(middleware=middleware)
-app.mount("/ui", StaticFiles(directory="dist", html = True), name="ui")
+if path.exists(ui_path):
+    app.mount("/ui", StaticFiles(directory=ui_path, html = True), name="ui")
+
 
 # Define the request body. It should contain only a text field
 class TextRequest(BaseModel):
@@ -122,6 +141,19 @@ async def post_data(request: TextRequest, Token: str = Header(None, convert_unde
                 p['mapping']['label'] = mappings[p['label']]
                 if p['mapping']['label'] in labels['euvoc']:
                     p['mapping']['description'] = labels['euvoc'][p['mapping']['label']]
+        else:
+            if p['label'] in parents:
+                p['mt'] = {
+                    "label": parents[p['label']]
+                }
+                if parents[p['label']] in these_labels:
+                    p['mt']["description"] = these_labels[parents[p['label']]]
+                do_label = parents[p['label']][0:2]
+                p['do'] = {
+                    "label": do_label
+                }
+                if do_label in these_labels:
+                    p['do']["description"] = these_labels[do_label]
         i += 1
         condition = i > top_k or threshold > p['score']
         if greedy:
